@@ -104,7 +104,7 @@
                     <option value="G8E">G8E</option><option value="G8F">G8F</option>
                 </select>
                 <input type="text" id="player-name" placeholder="輸入你的姓名..." class="input-style">
-                <button id="sync-btn" class="btn" style="background:var(--accent); width:auto; padding:8px 25px; margin-top:8px; font-size:1rem;" onclick="saveScore()">提交紀錄並同步</button>
+                <button id="sync-btn" class="btn" style="background:var(--accent); width:auto; padding:8px 25px; margin-top:8px; font-size:1rem;">提交紀錄並同步</button>
             </div>
             <button id="restart-btn" class="btn" style="background:var(--success); width:auto; padding:10px 30px; margin-top:10px; font-size:1rem; display:none;" onclick="location.reload()">再戰一次</button>
         </div>
@@ -126,7 +126,7 @@
             • 15 秒內完成：<b>+15 分</b><br>
             • 25 秒內完成：<b>+5 分</b><br>
         </div>
-        <button class="btn btn-start" onclick="startGame()">開始挑戰</button>
+        <button class="btn btn-start" id="btn-start">開始挑戰</button>
     </div>
 
     <div id="game-screen">
@@ -141,11 +141,13 @@
         <ul id="sortable-list"></ul>
         <div id="feedback"></div>
         <button id="submit-btn" class="btn">提交排序</button>
-        <button id="next-btn" class="btn" onclick="clearAutoNext(); nextLevel();">下一關 <span id="auto-timer"></span></button>
+        <button id="next-btn" class="btn">下一關 <span id="auto-timer"></span></button>
     </div>
 </div>
 
 <script>
+(function() { // 👈 IIFE 閉包保護開始
+
 // 請更換為您的 Google Script URL
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbpaxc9SNkWwqGqCs_04-qQDkOlRIYhnwHCI6BLFXIcW7YTL4ct6FSQF90r8Txv2NM/exec"; 
 
@@ -327,7 +329,6 @@ document.getElementById('submit-btn').addEventListener('click', () => {
         const timeUsed = (Date.now() - startTime) / 1000;
         let bonus = 0;
         if (currentLevelBase === 40) { 
-            // 已與中三級一致：10秒內+30分，15秒內+15分，25秒內+5分
             bonus = (timeUsed <= 10) ? 30 : (timeUsed <= 15) ? 15 : (timeUsed <= 25) ? 5 : 0;
         }
         
@@ -368,7 +369,6 @@ function finishGame() {
     initParticles();
     animateScore(0, score, 2000);    
 
-    // 已與中三級分數門檻睇齊 (670, 620, 570, 520, 470, 420, 370, <370)
     let rank = "🐣 以為王安石是石塊名稱的人", activeId = "r8";
     if (score >= 670) { rank = "💎 宋朝穿越者"; activeId = "r1"; }
     else if (score >= 620) { rank = "🔥 史學大宗師"; activeId = "r2"; }
@@ -425,6 +425,13 @@ function saveScore() {
     .then(() => { alert("紀錄已成功同步！"); document.getElementById('name-input-group').style.display = 'none'; document.getElementById('restart-btn').style.display = 'inline-block'; })
     .catch(() => { alert("同步失敗！"); btn.innerText = "提交紀錄並同步"; btn.disabled = false; });
 }
+
+// 內部事件監聽器綁定（確保閉包保護有效）
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('next-btn').addEventListener('click', () => { clearAutoNext(); nextLevel(); });
+document.getElementById('sync-btn').addEventListener('click', saveScore);
+
+})(); // 👈 IIFE 閉包保護結束
 </script>
 </body>
 </html>
